@@ -23,16 +23,15 @@ int main(int argc, char * argv[]) try
     rs2::context ctx;
     auto list = ctx.query_devices(); // Get a snapshot of currently connected devices
     if (list.size() == 0) 
-        throw std::runtime_error("No device detected. Is it plugged in?");
+        throw runtime_error("No device detected. Is it plugged in?");
     rs2::device dev = list.front();
 
     //Create a configuration for configuring the pipeline with a non default profile
     rs2::config cfg;
 
     //Add desired streams to configuration
-    // cfg.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_Y8, 30);
-    // cfg.enable_stream(RS2_STREAM_INFRARED, 640, 480, RS2_FORMAT_Z16, 30);
-    // cfg.enable_stream(RS2_STREAM_DEPTH, 640, 480, RS2_FORMAT_Z16, 30);
+    cfg.enable_stream(RS2_STREAM_DEPTH, 640, 480, RS2_FORMAT_Z16, 30);
+    cfg.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_BGR8, 30);
 
 	// This tutorial will access only a single device, but it is trivial to extend to multiple devices
 	printf("\nUsing device 0, an %s\n", dev.get_info(RS2_CAMERA_INFO_NAME));
@@ -46,9 +45,11 @@ int main(int argc, char * argv[]) try
 	Mat im_depth(480, 640, CV_16UC1);
 	Mat im_color(480, 640, CV_8UC3);
 
-    auto sensor = selection.get_device().first<rs2::depth_sensor>();
-    float scale =  sensor.get_depth_scale(); 
-	cerr << "dev->scale: " << scale << endl;
+    //auto sensor = selection.get_device().first<rs2::depth_sensor>();
+    //float scale =  sensor.get_depth_scale(); 
+	//cerr << "dev->scale: " << scale << endl;
+
+    rs2::colorizer color_map;
 
 	while(1)
     {
@@ -56,6 +57,7 @@ int main(int argc, char * argv[]) try
 
         rs2::frame depth_frame = frames.get_depth_frame(); // Find and colorize the depth data
         rs2::frame color_frame = frames.get_color_frame(); // Find the color data
+        rs2::frame depth_color = color_map(frames.get_depth_frame());
 
         // const uint16_t * depth_image = (const uint16_t *) depth.as<rs2::video_frame>();
 		// const uint8_t * color_image = (const uint8_t *) color.as<rs2::video_frame>();
@@ -76,13 +78,18 @@ int main(int argc, char * argv[]) try
 		// 	im_depth.at<unsigned short>(i / im_color.cols, i%im_color.cols) = depth_image[i];
 		// }
 
-        Mat depth_show(Size(640, 480), CV_16UC1, (void*)depth_frame.get_data(), Mat::AUTO_STEP);
-        Mat color_show(Size(640, 480), CV_8UC3, (void*)color_frame.get_data(), Mat::AUTO_STEP);
+        Mat depth_show(Size(640, 480), CV_16UC1, (void*)depth_frame.get_data());
+        depth_show *= 1.0;
+        Mat color_show(Size(640, 480), CV_8UC3, (void*)color_frame.get_data());
+        Mat depth_color_show(Size(640, 480), CV_8UC3, (void*)depth_color.get_data());
 
-		cv::imshow("im_depth", depth_show);
-		cv::imshow("im_color", depth_show);
+        Mat normalized_depth;
+        normalize(depth_show, normalized_depth, 255, 0, NORM_MINMAX, CV_8U);
 
-		cv::waitKey( 1 );
+		imshow("im_depth", depth_color_show);
+		imshow("im_color", color_show);
+
+		waitKey( 1 );
 	}
 
     return EXIT_SUCCESS;

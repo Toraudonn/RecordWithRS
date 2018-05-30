@@ -1,22 +1,19 @@
 {
-    "configurations": [
-        {
-            "name": "Linux",
-            "browse": {
-                "path": [
-                    "${workspaceFolder}"
-                ],
-                "limitSymbolsToIncludedHeaders": true
+	"configurations": [
+		{
+			"name": "Linux",
+			"includePath": ["/usr/include", "/usr/local/include", "${workspaceRoot}"],
+			"defines": [],
+			"intelliSenseMode": "clang-x64",
+			"browse": {
+				"path": ["/usr/include", "/usr/local/include/opencv", "${workspaceRoot}"],
+				"limitSymbolsToIncludedHeaders": true,
+				"databaseFilename": ""
             },
-            "includePath": [
-                "${workspaceFolder}/**"
-            ],
-            "defines": [],
-            "compilerPath": "/usr/bin/gcc",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "intelliSenseMode": "clang-x64"
-        }
-    ],
-    "version": 4
+            "compilerPath": "/usr/bin/gcc"
+		}
+	],
+	"version": 4
 }

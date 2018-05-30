@@ -20,6 +20,8 @@ endif()
 
 include(GNUInstallDirs)
 
+include(CMakeToolsHelpers OPTIONAL)
+
 # Initial check for packages:
 
 find_package(OpenGL)
