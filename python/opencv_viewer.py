@@ -54,6 +54,9 @@ try:
         cv2.imshow('RealSense', images)
         cv2.waitKey(1)
 
+        cv2.imwrite("rgb.png", color_image)
+        cv2.imwrite("depth.png", depth_image)
+
 finally:
 
     # Stop streaming
