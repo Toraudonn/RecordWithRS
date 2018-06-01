@@ -1,6 +1,6 @@
 // License: Apache 2.0. See LICENSE file in root directory.
 // Copyright(c) 2017 Intel Corporation. All Rights Reserved.
-
+#include <stdio.h>
 #include <librealsense2/rs.hpp> // Include RealSense Cross Platform API
 #include <opencv2/opencv.hpp>
 // #include "example.hpp"          // Include short list of convenience functions for rendering
@@ -13,11 +13,11 @@ using namespace cv;
 int main(int argc, char * argv[]) try
 {
 	
-	cerr<<"Options------------------------"<<endl;
-	cerr<<" press 's': recording mode     "<<endl;
-	cerr<<" press 'e': stop recording     "<<endl;
-	cerr<<" press 'q': quit               "<<endl;
-	cerr<<"-------------------------------"<<endl;
+	cout <<"Options------------------------"<<endl;
+	cout <<" press 's': recording mode     "<<endl;
+	cout <<" press 'e': stop recording     "<<endl;
+	cout <<" press 'q': quit               "<<endl;
+	cout <<"-------------------------------"<<endl;
 
 	// Create a context object. This object owns the handles to all connected realsense devices.
     rs2::context ctx;

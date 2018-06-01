@@ -2,12 +2,10 @@
 cmake_minimum_required(VERSION 3.1.0)
 
 # Define the project
-project(RecordWithRS)
+project(rs-capture)
 
 # Save the command line compile commands in the build output
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
-# View the makefile commands during build
-#set(CMAKE_VERBOSE_MAKEFILE on)
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
@@ -18,44 +16,37 @@ elseif(COMPILER_SUPPORTS_CXX0X)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 endif()
 
-include(GNUInstallDirs)
+#====================================================================================================================#
+# Options:
 
-include(CMakeToolsHelpers OPTIONAL)
+# include( GNUInstallDirs )
 
-# Initial check for packages:
+include( CMakeToolsHelpers OPTIONAL )
 
-find_package(OpenGL)
-if(NOT OPENGL_FOUND)
-    message(FATAL_ERROR "\n\n OpenGL package is missing!\n\n")
-endif()
+#====================================================================================================================#
+# Dependencies:
 
-set(DEPENDENCIES realsense2 ${OPENGL_LIBRARIES})
+# OPENCV
+find_package( OpenCV REQUIRED )
 
-# Find glfw header
-find_path(GLFW_INCLUDE_DIR NAMES GLFW/glfw3.h
-    PATHS /usr/X11R6/include
-            /usr/include/X11
-            /opt/graphics/OpenGL/include
-            /opt/graphics/OpenGL/contrib/libglfw
-            /usr/local/include
-            /usr/include/GL
-            /usr/include
-)
-# Find glfw library
-find_library(GLFW_LIBRARIES NAMES glfw glfw3
-        PATHS /usr/lib64
-                /usr/lib
-                /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}
-                /usr/local/lib64
-                /usr/local/lib
-                /usr/local/lib/${CMAKE_LIBRARY_ARCHITECTURE}
-                /usr/X11R6/lib
-)
-list(APPEND DEPENDENCIES m ${GLFW_LIBRARIES} ${LIBUSB1_LIBRARIES})
-include_directories(${GLFW_INCLUDE_DIR})
+# REALSENSE
+find_library( RS_LIB realsense )
 
-# Sub directories:
+set(DEPENDENCIES ${RS_LIB} ${OpenCV_LIBS})
 
-add_subdirectory(src)
-# add_subdirectory(third-party)
+#====================================================================================================================#
 
+# Add SOURCES:
+file( GLOB SOURCES "src/rs-capture.cpp" )
+
+# Add HEADERS:
+file( GLOB HEADERS "include/*.hpp" )
+
+#====================================================================================================================#
+
+include_directories(  ${CMAKE_CURRENT_SOURCE_DIR}/include )
+link_directories( ${CMAKE_BINARY_DIR} )
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR} )
+add_executable( rs-capture ${SOURCES} ${HEADERS} )
+
+target_link_libraries( rs-capture ${DEPENDENCIES} )
