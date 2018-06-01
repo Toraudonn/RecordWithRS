@@ -19,5 +19,5 @@ Therefore you shouldn't run this script if you don't want to delete your data.
 
 ## TODOs
 
--[x] Create the data saving script
+- [x] Create the data saving script
  
