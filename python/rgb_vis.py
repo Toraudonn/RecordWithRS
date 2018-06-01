@@ -4,8 +4,8 @@ import numpy as np
 
 if __name__ == "__main__":
     print("Read Redwood dataset")
-    color_raw = o3.read_image("rgb.png")
-    depth_raw = o3.read_image("depth.png")
+    color_raw = o3.read_image("../data/image/image00060.png")
+    depth_raw = o3.read_image("../data/depth/depth00060.png")
     d_img = np.asarray(depth_raw)
     print(d_img)
     print(d_img.dtype)

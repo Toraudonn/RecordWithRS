@@ -1,8 +1,8 @@
 {
     "files.associations": {
-        "stdexcept": "cpp"
+        "stdexcept": "cpp",
+        "array": "cpp"
     },
     "python.linting.enabled": true,
-    "python.pythonPath": "/home/haruyaishikawa/.virtualenvs/rs_opencv/bin/python",
-    
+    "python.pythonPath": "/home/haruyaishikawa/.virtualenvs/rs_opencv/bin/python"
 }

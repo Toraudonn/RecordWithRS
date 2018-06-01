@@ -2,7 +2,7 @@
 	"configurations": [
 		{
 			"name": "Linux",
-			"includePath": ["/usr/include", "/usr/local/include", "${workspaceRoot}"],
+			"includePath": ["/usr/include", "/usr/local/include", "${workspaceRoot}", "${workspaceRoot}/include"],
 			"defines": [],
 			"intelliSenseMode": "clang-x64",
 			"browse": {
