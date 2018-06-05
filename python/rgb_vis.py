@@ -29,3 +29,4 @@ if __name__ == "__main__":
     print(pcd)
     o3.draw_geometries([pcd])
     o3.write_point_cloud( 'pointcloud.pcd', pcd )
+    o3.write_point_cloud( 'pointcloud.ply', pcd )
