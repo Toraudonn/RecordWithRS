@@ -33,3 +33,6 @@
 
 build/*
 data/*
+
+python/data*
+python/openpose/*
