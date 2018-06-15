@@ -63,8 +63,8 @@ int main(int argc, char * argv[]) try
         waitKey(1);
 
         char name_c[256], name_d[256];
-        sprintf( name_c,"./data/image/image%05d.png", cnt );
-        sprintf( name_d,"./data/depth/depth%05d.png", cnt );
+        sprintf( name_c,"./data/rgb/%05d.png", cnt );
+        sprintf( name_d,"./data/depth/%05d.png", cnt );
 
         imwrite( name_c, im_c);
         imwrite( name_d, im_d);

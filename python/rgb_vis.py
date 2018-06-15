@@ -4,8 +4,8 @@ import numpy as np
 
 if __name__ == "__main__":
     print("Read Redwood dataset")
-    color_raw = o3.read_image("../data/image/image00060.png")
-    depth_raw = o3.read_image("../data/depth/depth00060.png")
+    color_raw = o3.read_image("../data/rgb/00060.png")
+    depth_raw = o3.read_image("../data/depth/00060.png")
     d_img = np.asarray(depth_raw)
     print(d_img)
     print(d_img.dtype)
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     pcd = o3.create_point_cloud_from_rgbd_image(rgbd_image, o3.PinholeCameraIntrinsic(
             o3.PinholeCameraIntrinsicParameters.PrimeSenseDefault))
     # Flip it, otherwise the pointcloud will be upside down
-    #pcd.transform([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
+    pcd.transform([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
     print(pcd)
     o3.draw_geometries([pcd])
     o3.write_point_cloud( 'pointcloud.pcd', pcd )

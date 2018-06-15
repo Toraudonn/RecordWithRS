@@ -3,6 +3,6 @@
         "stdexcept": "cpp",
         "array": "cpp"
     },
-    "python.linting.enabled": true,
+    "python.linting.enabled": false,
     "python.pythonPath": "/home/haruyaishikawa/anaconda3/envs/chainer/bin/python"
 }
