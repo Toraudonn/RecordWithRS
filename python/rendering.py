@@ -4,7 +4,6 @@ import numpy as np
 import csv
 import cv2
 from pprint import pprint 
-from pyquaternion import Quaternion
 
 import argparse
 import sys
@@ -171,9 +170,6 @@ class Joints:
         
         return geometries
         
-
-
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pose Getter')
