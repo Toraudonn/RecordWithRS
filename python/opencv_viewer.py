@@ -46,16 +46,16 @@ try:
         # Stack both images horizontally
         images = np.hstack((color_image, depth_colormap))
         
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(images, preset_name,(60,80), font, 4,(255,255,255),2,cv2.LINE_AA)
+        # font = cv2.FONT_HERSHEY_SIMPLEX
+        # cv2.putText(images, preset_name,(60,80), font, 4,(255,255,255),2,cv2.LINE_AA)
 
         # Show images
         cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
         cv2.imshow('RealSense', images)
         cv2.waitKey(1)
 
-        # cv2.imwrite("rgb.png", color_image)
-        # cv2.imwrite("depth.png", depth_image)
+        cv2.imwrite("rgb.png", color_image)
+        cv2.imwrite("depth.png", depth_image)
 
 finally:
 

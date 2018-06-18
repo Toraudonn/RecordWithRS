@@ -1,0 +1,221 @@
+import chainer
+import open3d as o3
+import numpy as np
+import csv
+import cv2
+from pprint import pprint 
+from pyquaternion import Quaternion
+
+import argparse
+import sys
+import os
+
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
+abs_op_lib = os.path.join(dir_path, 'openpose')
+assert os.path.exists(abs_op_lib)
+sys.path.insert(0, abs_op_lib)
+try:
+    from entity import params, JointType
+except:
+    print('Check the path for OpenPose Directory')
+
+
+class Joint:
+
+        def __init__(self, P, index, coord):
+            '''
+            Init with
+            P: 4x4 Transform Matrix
+            index: joint index
+            coord: joint's camera coordinate
+            '''
+            self.point = self.convert2world(P, coord)
+            self.index = index
+            self.name = JointType(index).name
+
+        def convert2world(self, P, coord):
+            '''
+            Convert from Camera coordniate to World coordinate (according to P)
+            '''
+            _coord = np.concatenate([np.asarray(coord), [1.000]])
+            _P = np.array(P)
+            #FIXME: Remove this when P is fixed
+            rotate = np.array([[1,0,0,0], [0,-1,0,0],[0,0,-1,0],[0,0,0,1]])
+            n = rotate.dot(_coord)
+            return _P.dot(n)[:3]
+
+class Joints:
+
+    def __init__(self, P, raw_jnts):
+        assert len(raw_jnts) == 18, "Not enough points to make Joints."
+        self.P = P
+        self.joints = {}
+
+        for i, jointType in enumerate(JointType):
+            if (raw_jnts[i] == [0, 0, 0]).all():
+                self.joints[jointType.name] = np.zeros(3)
+            else:
+                joint = Joint(P, i, raw_jnts[i])
+                self.joints[jointType.name] = joint.point
+
+    def get_array(self):
+        arr = []
+        for k, v in self.joints.items():
+            if np.all(v != 0):
+                arr.append(v)
+        return np.asarray(arr)
+
+    def get_array_of_joint(self, joint):
+        if np.all(self.joints[joint] != 0):
+            return np.asarray(self.joints[joint])
+
+    def to_pointcloud(self):
+        pc = o3.PointCloud()
+        pc.points = o3.Vector3dVector(np.array(self.get_array()))
+        return pc
+
+    def normalize(self, v):
+        norm = np.linalg.norm(v)
+        if norm == 0: 
+            return v
+        return v / norm
+
+    def get_rotation(self, a, b):
+        # map a onto unit vector b
+        # https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
+        
+        V = np.cross(a, b)
+        s = np.linalg.norm(V)
+        c = np.dot(a, b)
+        I = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        Vx = np.array([[0, -V[2], V[1]], [V[2], 0, -V[0]], [-V[1], V[0], 0]])
+
+        R = I + Vx + np.matmul(Vx, Vx) * (1 / (1 + c))
+        return R
+    
+    def draw_geometry(self):
+
+        joint_colors = [
+            [255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0],
+            [85, 255, 0], [0, 255, 0], [0, 255, 85], [0, 255, 170], [0, 255, 255],
+            [0, 170, 255], [0, 85, 255], [0, 0, 255], [85, 0, 255], [170, 0, 255],
+            [255, 0, 255], [255, 0, 170], [255, 0, 85]
+        ]
+
+        geometries = []
+        for i, (jointType, color) in enumerate(zip(JointType, joint_colors)):
+            if np.all(self.joints[jointType.name] != 0):
+                sphere = o3.create_mesh_sphere(radius = 10.0)
+                pos = np.concatenate([np.asarray(self.joints[jointType.name]), [1]])
+                Tm = np.array([[1,0,0,0], [0,1,0,0], [0,0,1,0], pos]).T
+                
+                # move sphere
+                sphere.transform(Tm)
+                
+
+                # paint sphere
+                sphere.paint_uniform_color([v / 255 for v in color])
+
+                geometries.append(sphere)
+
+        limb_colors = [
+            [0, 255, 0], [0, 255, 85], [0, 255, 170], [0, 255, 255], [0, 170, 255],
+            [0, 85, 255], [255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0.],
+            [255, 0, 85], [170, 255, 0], [85, 255, 0], [170, 0, 255.], [0, 0, 255],
+            [0, 0, 255], [255, 0, 255], [170, 0, 255], [255, 0, 170],
+        ]
+
+        for i, (limb, color) in enumerate(zip(params['limbs_point'], limb_colors)):
+            if i != 9 and i != 13:  # don't show ear-shoulder connection
+                l1 = limb[0].name
+                l2 = limb[1].name
+                pl1 = self.joints[l1]
+                pl2 = self.joints[l2]
+
+                if np.all(pl1 != 0) and np.all(pl2 != 0):
+                    # print("-------------")
+                    # print(pl1)
+                    # print(pl2)
+                    # connect the two joints with cylindar
+                    dist = np.linalg.norm(pl1 - pl2)
+                    #print(dist)
+                    midpoint = np.concatenate([(pl1 + pl2) / 2, [1]])
+                    #print(midpoint)
+
+                    a = np.array([0, 0, 1])
+                    b = self.normalize(pl2 - pl1)
+                    # magA = np.sqrt(np.dot(a, a))
+                    # magB = np.sqrt(np.dot(b, b))
+                    # angle = np.arccos(np.dot(a, b)/(magA * magB))
+                    # print(angle)
+
+                    # q = Quaternion(axis=a, angle=angle)
+                    
+                    # print(q.rotation_matrix)
+                    
+                    # R = q.rotation_matrix.T
+
+                    R = self.get_rotation(a, b).T
+                    
+                    tm1 = np.concatenate([R[0], [0]])
+                    tm2 = np.concatenate([R[1], [0]])
+                    tm3 = np.concatenate([R[2], [0]])
+                    Tm = np.array([tm1, tm2, tm3, midpoint]).T
+
+                    cylinder = o3.create_mesh_cylinder(radius = 5.0, height = dist)
+                    cylinder.paint_uniform_color([v / 255 for v in color])
+
+                    cylinder.transform(Tm)
+                    geometries.append(cylinder)
+        
+        return geometries
+        
+
+
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Pose Getter')
+    parser.add_argument('--data', default= '../data',help='relative data path from where you use this program')
+    parser.add_argument('--static', default='static_data', help='static data location')
+    args = parser.parse_args()
+
+    # get directory of data (rgb, depth)
+    data_path = os.path.join(dir_path, args.data)
+    static_path = os.path.join(args.static)
+    assert os.path.exists(data_path), "Could not find data directory in the path: {}".format(data_path)
+    assert os.path.exists(static_path), "Could not find static data directory in the path: {}".format(static_path)
+    print('Getting data from: {}'.format(data_path))
+
+    # Translation matrix
+    P_matrix_filename = os.path.join(static_path, 'T.csv')
+    P = np.loadtxt(P_matrix_filename, delimiter=',')
+
+    # Load room
+    room_ply = os.path.join(static_path, 'room_mode_1.ply')
+    pc_room = o3.read_point_cloud(room_ply)
+
+    # pose path
+    pose_path = os.path.join(data_path, 'pose')
+
+    for filename in sorted(os.listdir(pose_path)):
+        if filename.endswith('.csv'):
+            tag = filename.split('.')[0]
+
+            #FIXME: For now don't think about multiple poses in 1 frame
+            if len(tag.split('_')) > 1:
+                continue
+            
+            print('\nimage: ', tag)
+
+            # get joints data and turn it into numpy array
+            csv_path = os.path.join(pose_path, filename)
+            raw_joints = np.loadtxt(csv_path, delimiter=',')
+            
+            joints = Joints(P, raw_joints)
+
+            pc_joints = joints.to_pointcloud()
+
+            o3.draw_geometries([pc_room, pc_joints])
+

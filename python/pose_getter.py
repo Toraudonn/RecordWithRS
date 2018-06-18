@@ -18,9 +18,27 @@ except:
     print('Check the path for OpenPose Directory')
 
 
+def calc_xy(K, x, y, z):
+    '''
+    K: intrinsic matrix
+    x: pixel value x
+    y: pixel value y
+    z: mm value of z
+    '''
+    fx = K[0][0]
+    fy = K[1][1]
+    u0 = K[0][2]
+    v0 = K[1][2]
+
+    _x = (x - u0) * z / fx
+    _y = (y - v0) * z / fy
+    return _x, _y
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Pose Getter')
-    parser.add_argument('--data', default= 'data',help='relative data path from where you use this program')
+    parser.add_argument('--data', default= '../data',help='relative data path from where you use this program')
     parser.add_argument('--save', default= 'pose',help='relative saving directory from where you use this program')
     parser.add_argument('--gpu', '-g', type=int, default=0, help='GPU ID (negative value indicates CPU)')
     args = parser.parse_args()
@@ -47,6 +65,8 @@ if __name__ == "__main__":
                                  "models/coco_posenet.npz"), 
                                  device=args.gpu)
 
+    # camera params
+    camera_intrinsic = o3.read_pinhole_camera_intrinsic("static_data/d415.json")
     # Loop:
     for filename in os.listdir(rgb_path):
         if filename.endswith(".png"): 
@@ -70,13 +90,11 @@ if __name__ == "__main__":
                 print('too many poses!')
                 continue
 
-            # use open3d api for data pipeline
-            rgb_raw = o3.read_image(rgb_img)
-            depth_raw = o3.read_image(depth_img)
-            rgbd_image = o3.create_rgbd_image_from_color_and_depth(rgb_raw, depth_raw)
-            
-            # open3d.Image to numpy array
-            depths = np.array(rgbd_image.depth)
+            # Depths data (raw in mm)
+            depths = np.asarray(o3.read_image(depth_img))
+
+            # Instrinsic Matrix
+            K = np.asarray(camera_intrinsic.intrinsic_matrix)
 
             for i, pose in enumerate(poses):
                 csv_name = tag + '_' + str(i) + '.csv' if i > 0 else tag + '.csv'
@@ -85,14 +103,13 @@ if __name__ == "__main__":
 
                 for i, joint in enumerate(pose):
                     x, y = int(joint[0]), int(joint[1])
-                    depth = depths[y][x]
-                    #print('x: {}, y: {}, depth: {}'.format(x, y, depth))
-                    if depth != 0.0:
-                        joints[i] = np.array([x, y, depth])
-                
-                # print(joints)
-                
+                    Z = depths[y][x]
+                    X, Y = calc_xy(K, x, y, Z)
 
+                    print('x: {}, y: {}, depth: {}'.format(X, Y, Z))
+                    if Z != 0.0:
+                        joints[i] = np.asarray([X, Y, Z])
+                
                 csv_path = os.path.join(save_path, csv_name)
                 np.savetxt(csv_path, joints, delimiter=",")
                     
