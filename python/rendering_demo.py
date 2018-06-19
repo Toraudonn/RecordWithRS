@@ -57,14 +57,18 @@ if __name__ == "__main__":
     tag = filename.split('.')[0]
     print('\nimage: ', tag)
 
+    filename = "00164.csv"
+
     # get joints data and turn it into numpy array
     csv_path = os.path.join(pose_path, filename)
     raw_joints = np.loadtxt(csv_path, delimiter=',')
     
     joints = Joints(P, raw_joints)
     #pprint(joints.joints)
-    pc_joints = joints.draw_geometry()
-
+    pc_joints = joints.create_skeleton_geometry()
+    mesh_frame = o3.create_mesh_coordinate_frame(size = 1000, origin = [0, 0, 0])
     pc_joints.append(pc_room)
+
+    pc_joints.append(mesh_frame)
 
     o3.draw_geometries(pc_joints)

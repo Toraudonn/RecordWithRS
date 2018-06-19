@@ -9,7 +9,6 @@ import argparse
 import sys
 import os
 
-
 dir_path = os.path.dirname(os.path.realpath(__file__))
 abs_op_lib = os.path.join(dir_path, 'openpose')
 assert os.path.exists(abs_op_lib)
@@ -44,6 +43,7 @@ class Joint:
             n = rotate.dot(_coord)
             return _P.dot(n)[:3]
 
+
 class Joints:
 
     def __init__(self, P, raw_jnts):
@@ -53,6 +53,7 @@ class Joints:
 
         for i, jointType in enumerate(JointType):
             if (raw_jnts[i] == [0, 0, 0]).all():
+                # create a zero vector for place holder
                 self.joints[jointType.name] = np.zeros(3)
             else:
                 joint = Joint(P, i, raw_jnts[i])
@@ -75,26 +76,41 @@ class Joints:
         return pc
 
     def normalize(self, v):
+        '''
+        Normalize a vector
+        '''
         norm = np.linalg.norm(v)
         if norm == 0: 
             return v
         return v / norm
 
     def get_rotation(self, a, b):
-        # map a onto unit vector b
+        '''
+        Calculate rotation matrix from two 3D unit vectors
+        - maps vector 'a' onto vector 'b'
+
+        FIXME: when the two vectors are parallel
+        '''
         # https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
         
         V = np.cross(a, b)
         s = np.linalg.norm(V)
         c = np.dot(a, b)
-        I = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-        Vx = np.array([[0, -V[2], V[1]], [V[2], 0, -V[0]], [-V[1], V[0], 0]])
-
+        I = np.array([[1, 0, 0], 
+                     [0, 1, 0], 
+                     [0, 0, 1]
+                     ])
+        Vx = np.array([[0, -V[2], V[1]], 
+                      [V[2], 0, -V[0]], 
+                      [-V[1], V[0], 0]
+                      ])
         R = I + Vx + np.matmul(Vx, Vx) * (1 / (1 + c))
         return R
     
-    def draw_geometry(self):
-
+    def create_skeleton_geometry(self):
+        '''
+        Create human skeleton geometry
+        '''
         joint_colors = [
             [255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0],
             [85, 255, 0], [0, 255, 0], [0, 255, 85], [0, 255, 170], [0, 255, 255],
@@ -107,12 +123,10 @@ class Joints:
             if np.all(self.joints[jointType.name] != 0):
                 sphere = o3.create_mesh_sphere(radius = 10.0)
                 pos = np.concatenate([np.asarray(self.joints[jointType.name]), [1]])
+                # create translation matrix
                 Tm = np.array([[1,0,0,0], [0,1,0,0], [0,0,1,0], pos]).T
-                
                 # move sphere
                 sphere.transform(Tm)
-                
-
                 # paint sphere
                 sphere.paint_uniform_color([v / 255 for v in color])
 
@@ -132,44 +146,91 @@ class Joints:
                 pl1 = self.joints[l1]
                 pl2 = self.joints[l2]
 
-                if np.all(pl1 != 0) and np.all(pl2 != 0):
-                    # print("-------------")
-                    # print(pl1)
-                    # print(pl2)
-                    # connect the two joints with cylindar
+                if np.any(pl1) and np.any(pl2):
                     dist = np.linalg.norm(pl1 - pl2)
-                    #print(dist)
                     midpoint = np.concatenate([(pl1 + pl2) / 2, [1]])
-                    #print(midpoint)
 
-                    a = np.array([0, 0, 1])
-                    b = self.normalize(pl2 - pl1)
-                    # magA = np.sqrt(np.dot(a, a))
-                    # magB = np.sqrt(np.dot(b, b))
-                    # angle = np.arccos(np.dot(a, b)/(magA * magB))
-                    # print(angle)
-
-                    # q = Quaternion(axis=a, angle=angle)
+                    # orientation of cylindar (z axis)
+                    vec_cylindar = np.array([0, 0, 1])
+                    # normalized vector of the two points connected
+                    norm = self.normalize(pl2 - pl1)
                     
-                    # print(q.rotation_matrix)
+                    # get rotation matrix
+                    R = self.get_rotation(vec_cylindar, norm).T
                     
-                    # R = q.rotation_matrix.T
-
-                    R = self.get_rotation(a, b).T
-                    
+                    # create translation matrix
                     tm1 = np.concatenate([R[0], [0]])
                     tm2 = np.concatenate([R[1], [0]])
                     tm3 = np.concatenate([R[2], [0]])
                     Tm = np.array([tm1, tm2, tm3, midpoint]).T
 
+                    # create the cylinder
                     cylinder = o3.create_mesh_cylinder(radius = 5.0, height = dist)
-                    cylinder.paint_uniform_color([v / 255 for v in color])
-
+                    # move the cylinder
                     cylinder.transform(Tm)
+                    # paint the cylinder
+                    cylinder.paint_uniform_color([v / 255 for v in color])
+                    
                     geometries.append(cylinder)
         
         return geometries
+
+class CustomVisualizer:
+
+    def __init__(self, base):
+        self.base = base
         
+    def intialize_visualizer(self):
+        '''
+        Function to add geometry (cannot destroy)
+        '''
+        self.vis = o3.Visualizer()
+        self.vis.create_window()
+        # self.base.transform(np.array([
+        #     [1,0,0,0],
+        #     [0,1,0,0],
+        #     [0,0,1,0],
+        #     [0,0,0,1]
+        # ]))
+        self.vis.add_geometry(self.base)
+        self.trajectory = o3.read_pinhole_camera_trajectory("pinholeCameraTrajectory2.json")
+        self.custom_view()
+        
+        self.vis.run()
+        # self.vis.get_render_option().save_to_json("pinholeCameraTrajectory")
+
+
+    def update_geometry(self, pcd):
+        
+        for p in pcd:
+            self.vis.add_geometry(p)
+
+        self.vis.update_geometry()
+        
+        self.vis.reset_view_point(False)
+        self.custom_view()
+        self.vis.poll_events()
+        self.vis.update_renderer()
+
+        for p in pcd:
+            p.clear()
+    
+    def custom_view(self):
+        ctr = self.vis.get_view_control()
+        intrinsic = self.trajectory.intrinsic
+        extrinsic = self.trajectory.extrinsic
+        ctr.convert_from_pinhole_camera_parameters(intrinsic, np.asarray(extrinsic)[0])
+
+
+def custom_draw_geometry(pcd):
+    # The following code achieves the same effect as:
+    # draw_geometries([pcd])
+    vis = o3.Visualizer()
+    vis.create_window()
+    vis.add_geometry(pcd)
+    vis.run()
+    vis.destroy_window()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pose Getter')
@@ -195,6 +256,10 @@ if __name__ == '__main__':
     # pose path
     pose_path = os.path.join(data_path, 'pose')
 
+    # initialize visualizer
+    vis = CustomVisualizer(pc_room)
+    vis.intialize_visualizer()
+
     for filename in sorted(os.listdir(pose_path)):
         if filename.endswith('.csv'):
             tag = filename.split('.')[0]
@@ -210,8 +275,11 @@ if __name__ == '__main__':
             raw_joints = np.loadtxt(csv_path, delimiter=',')
             
             joints = Joints(P, raw_joints)
+            # get skeleton geometries
+            
+            pc_joints = joints.create_skeleton_geometry()
 
-            pc_joints = joints.to_pointcloud()
+            vis.update_geometry(pc_joints)
 
-            o3.draw_geometries([pc_room, pc_joints])
+
 
