@@ -186,12 +186,6 @@ class CustomVisualizer:
         '''
         self.vis = o3.Visualizer()
         self.vis.create_window()
-        # self.base.transform(np.array([
-        #     [1,0,0,0],
-        #     [0,1,0,0],
-        #     [0,0,1,0],
-        #     [0,0,0,1]
-        # ]))
         self.vis.add_geometry(self.base)
         self.trajectory = o3.read_pinhole_camera_trajectory("pinholeCameraTrajectory2.json")
         self.custom_view()
