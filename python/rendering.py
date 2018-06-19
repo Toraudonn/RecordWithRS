@@ -8,6 +8,7 @@ from pprint import pprint
 import argparse
 import sys
 import os
+import time
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 abs_op_lib = os.path.join(dir_path, 'openpose')
@@ -186,12 +187,12 @@ class CustomVisualizer:
         '''
         self.vis = o3.Visualizer()
         self.vis.create_window()
+        self.vis.get_render_option().load_from_json(
+            "static_data/renderoption.json")
         self.vis.add_geometry(self.base)
-        self.trajectory = o3.read_pinhole_camera_trajectory("pinholeCameraTrajectory2.json")
+        self.trajectory = o3.read_pinhole_camera_trajectory("pinholeCameraTrajectory3.json")
         self.custom_view()
-        
         self.vis.run()
-        # self.vis.get_render_option().save_to_json("pinholeCameraTrajectory")
 
 
     def update_geometry(self, pcd):
@@ -274,6 +275,5 @@ if __name__ == '__main__':
             pc_joints = joints.create_skeleton_geometry()
 
             vis.update_geometry(pc_joints)
-
-
-
+            
+            time.sleep(0.025)
