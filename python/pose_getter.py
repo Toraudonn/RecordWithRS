@@ -104,10 +104,11 @@ if __name__ == "__main__":
                 for i, joint in enumerate(pose):
                     x, y = int(joint[0]), int(joint[1])
                     Z = depths[y][x]
-                    X, Y = calc_xy(K, x, y, Z)
 
                     print('x: {}, y: {}, depth: {}'.format(X, Y, Z))
                     if Z != 0.0:
+                        # Depth = 0 means that depth data was unavailable
+                        X, Y = calc_xy(K, x, y, Z)
                         joints[i] = np.asarray([X, Y, Z])
                 
                 csv_path = os.path.join(save_path, csv_name)

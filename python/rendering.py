@@ -217,16 +217,6 @@ class CustomVisualizer:
         ctr.convert_from_pinhole_camera_parameters(intrinsic, np.asarray(extrinsic)[0])
 
 
-def custom_draw_geometry(pcd):
-    # The following code achieves the same effect as:
-    # draw_geometries([pcd])
-    vis = o3.Visualizer()
-    vis.create_window()
-    vis.add_geometry(pcd)
-    vis.run()
-    vis.destroy_window()
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pose Getter')
     parser.add_argument('--data', default= '../data',help='relative data path from where you use this program')
