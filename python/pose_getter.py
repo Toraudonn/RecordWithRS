@@ -19,44 +19,37 @@ except:
 
 
 class Open3D_Chain:
-
+    '''
+    Open3D Chain for easy rendering
+    '''
     def __init__(self):
         self.camera_intrinsic = o3.read_pinhole_camera_intrinsic("static_data/d415.json")
+        self.K = np.asarray(self.camera_intrinsic.intrinsic_matrix)
 
-    def read_image(self, path, depth=False):
-        pass
-    
-    def 
+    def change_image(self, rgb_path, depths_path):
+        assert os.path.exists(rgb_path), 'Could not find corresponding rgb image in: {}'.format(rgb_path)
+        assert os.path.exists(depths_path), 'Could not find corresponding depth image in: {}'.format(depths_path)
+        self.rgb =  self.read_image(rgb_path)
+        self.depths =  self.read_image(depths_path)
 
-
-
-def get_image(path, method=0):
-    if method == 0:
-        # return using cv2
-        return cv2.imread(path)
-    else:
-        # return as np array
+    def read_image(self, path):
         return np.asarray(o3.read_image(path))
 
+    def calc_xy(self, x, y, z):
+        '''
+        K: intrinsic matrix
+        x: pixel value x
+        y: pixel value y
+        z: mm value of z
+        '''
+        fx = self.K[0][0]
+        fy = self.K[1][1]
+        u0 = self.K[0][2]
+        v0 = self.K[1][2]
 
-
-
-def calc_xy(K, x, y, z):
-    '''
-    K: intrinsic matrix
-    x: pixel value x
-    y: pixel value y
-    z: mm value of z
-    '''
-    fx = K[0][0]
-    fy = K[1][1]
-    u0 = K[0][2]
-    v0 = K[1][2]
-
-    _x = (x - u0) * z / fx
-    _y = (y - v0) * z / fy
-    return _x, _y
-
+        _x = (x - u0) * z / fx
+        _y = (y - v0) * z / fy
+        return _x, _y
 
 
 if __name__ == "__main__":
@@ -89,7 +82,8 @@ if __name__ == "__main__":
                                  device=args.gpu)
 
     # camera params
-    camera_intrinsic = o3.read_pinhole_camera_intrinsic("static_data/d415.json")
+    o3_chain = Open3D_Chain()
+
     # Loop:
     for filename in os.listdir(rgb_path):
         if filename.endswith(".png"): 
@@ -102,22 +96,17 @@ if __name__ == "__main__":
             if not os.path.exists(depth_img):
                 print('Could not find corresponding depth image in: {}'.format(depth_img))
                 continue
-        
+
+
             # read image
-            img = cv2.imread(rgb_img)
+            o3_chain.change_image(rgb_img, depth_img)
 
             # inference
-            poses, scores = pose_detector(img)
+            poses, scores = pose_detector(o3_chain.rgb)
             # print(poses)
             if len(poses) > 2:
                 print('too many poses!')
                 continue
-
-            # Depths data (raw in mm)
-            depths = np.asarray(o3.read_image(depth_img))
-
-            # Instrinsic Matrix
-            K = np.asarray(camera_intrinsic.intrinsic_matrix)
 
             for i, pose in enumerate(poses):
                 csv_name = tag + '_' + str(i) + '.csv' if i > 0 else tag + '.csv'
@@ -126,19 +115,14 @@ if __name__ == "__main__":
 
                 for i, joint in enumerate(pose):
                     x, y = int(joint[0]), int(joint[1])
-                    Z = depths[y][x]
+                    Z = o3_chain.depths[y][x]
 
-                    print('x: {}, y: {}, depth: {}'.format(X, Y, Z))
                     if Z != 0.0:
                         # Depth = 0 means that depth data was unavailable
-                        X, Y = calc_xy(K, x, y, Z)
+                        X, Y = o3_chain.calc_xy(x, y, Z)
                         joints[i] = np.asarray([X, Y, Z])
+                        print('x: {}, y: {}, depth: {}'.format(X, Y, Z))
                 
                 csv_path = os.path.join(save_path, csv_name)
                 np.savetxt(csv_path, joints, delimiter=",")
-                    
-
-            continue
-    
-
     
