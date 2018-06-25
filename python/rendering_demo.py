@@ -22,8 +22,6 @@ except:
     print('Check the path for OpenPose Directory')
 
 
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Pose Getter')
     parser.add_argument('--data', default= '../data',help='relative data path from where you use this program')

@@ -112,6 +112,8 @@ class Joints:
         '''
         Create human skeleton geometry
         '''
+        geometries = []
+        
         joint_colors = [
             [255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0],
             [85, 255, 0], [0, 255, 0], [0, 255, 85], [0, 255, 170], [0, 255, 255],
@@ -119,7 +121,13 @@ class Joints:
             [255, 0, 255], [255, 0, 170], [255, 0, 85]
         ]
 
-        geometries = []
+        limb_colors = [
+            [0, 255, 0], [0, 255, 85], [0, 255, 170], [0, 255, 255], [0, 170, 255],
+            [0, 85, 255], [255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0.],
+            [255, 0, 85], [170, 255, 0], [85, 255, 0], [170, 0, 255.], [0, 0, 255],
+            [0, 0, 255], [255, 0, 255], [170, 0, 255], [255, 0, 170],
+        ]
+
         for i, (jointType, color) in enumerate(zip(JointType, joint_colors)):
             if np.all(self.joints[jointType.name] != 0):
                 sphere = o3.create_mesh_sphere(radius = 10.0)
@@ -132,13 +140,6 @@ class Joints:
                 sphere.paint_uniform_color([v / 255 for v in color])
 
                 geometries.append(sphere)
-
-        limb_colors = [
-            [0, 255, 0], [0, 255, 85], [0, 255, 170], [0, 255, 255], [0, 170, 255],
-            [0, 85, 255], [255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0.],
-            [255, 0, 85], [170, 255, 0], [85, 255, 0], [170, 0, 255.], [0, 0, 255],
-            [0, 0, 255], [255, 0, 255], [170, 0, 255], [255, 0, 170],
-        ]
 
         for i, (limb, color) in enumerate(zip(params['limbs_point'], limb_colors)):
             if i != 9 and i != 13:  # don't show ear-shoulder connection
@@ -175,6 +176,7 @@ class Joints:
                     geometries.append(cylinder)
         
         return geometries
+
 
 class CustomVisualizer:
 
