@@ -18,6 +18,29 @@ except:
     print('Check the path for OpenPose Directory')
 
 
+class Open3D_Chain:
+
+    def __init__(self):
+        self.camera_intrinsic = o3.read_pinhole_camera_intrinsic("static_data/d415.json")
+
+    def read_image(self, path, depth=False):
+        pass
+    
+    def 
+
+
+
+def get_image(path, method=0):
+    if method == 0:
+        # return using cv2
+        return cv2.imread(path)
+    else:
+        # return as np array
+        return np.asarray(o3.read_image(path))
+
+
+
+
 def calc_xy(K, x, y, z):
     '''
     K: intrinsic matrix
