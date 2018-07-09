@@ -37,13 +37,16 @@ class Open3D_Chain:
     def get_pcd(self):
         return o3.create_point_cloud_from_rgbd_image(self.rgbd, self.camera_intrinsic)
     
-    def calc_xy(self, x, y, z):
+    def calc_xy(self, x, y, z=None):
         '''
         K: intrinsic matrix
         x: pixel value x
         y: pixel value y
         z: mm value of z
         '''
+        if not z:
+            z = self.get_depths()[y][x]
+
         fx = self.K[0][0]
         fy = self.K[1][1]
         u0 = self.K[0][2]

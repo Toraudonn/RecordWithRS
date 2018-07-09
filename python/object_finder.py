@@ -3,7 +3,9 @@ import sys
 import os
 
 import chainer
+from chainercv import utils
 import numpy as np
+import matplotlib.pyplot as plot
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 abs_maskrcnn = os.path.join(dir_path, 'maskrcnn')
@@ -11,7 +13,9 @@ assert os.path.exists(abs_maskrcnn)
 sys.path.insert(0, abs_maskrcnn)
 try:
     from mask_rcnn_train_chain import MaskRCNNTrainChain
-    from utils.bn_utils import freeze_bn, bn_to_affine 
+    from utils.bn_utils import freeze_bn, bn_to_affine
+    from mask_rcnn_resnet import MaskRCNNResNet
+    from utils.vis_bbox import vis_bbox
 except:
     print('Check the path for Mask-RCNN Directory')
 
@@ -38,11 +42,6 @@ def main():
     if args.background:
         import matplotlib
         matplotlib.use('Agg')
-    import matplotlib.pyplot as plot
-    from utils.vis_bbox import vis_bbox
-    from chainercv.datasets import voc_bbox_label_names
-    from mask_rcnn_resnet import MaskRCNNResNet
-    from chainercv import utils
     if args.extractor=='resnet50':
         model = MaskRCNNResNet(n_fg_class=80, roi_size=args.roi_size, pretrained_model=args.modelfile, n_layers=50, roi_align=args.roialign, class_ids=test_class_ids)
     elif args.extractor=='resnet101':
