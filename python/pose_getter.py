@@ -1,9 +1,10 @@
-import numpy as np
-import chainer
-
 import argparse
 import sys
 import os
+
+import numpy as np
+import chainer
+
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 abs_op_lib = os.path.join(dir_path, 'openpose')
