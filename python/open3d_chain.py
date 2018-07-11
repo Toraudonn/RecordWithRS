@@ -24,9 +24,18 @@ class Open3D_Chain:
     
     def get_rgb(self, rgbd=False):
         if rgbd:
+            # this returns grayscale
+            #FIXME: separate to grayscale
             return self.rgbd.color
         else:
             return np.asarray(self.rgb)
+
+    def get_grayscale(self):
+        if self.rgbd:
+            return np.asarray(self.rgbd.color)
+        else:
+            print("No RGB-D created!")
+        
 
     def get_depths(self, rgbd=False):
         if rgbd:

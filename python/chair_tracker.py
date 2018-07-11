@@ -55,12 +55,16 @@ if __name__ == '__main__':
     model.to_gpu()
     bn_to_affine(model)
 
-    chair_index = coco_label_names.index('chair')
+
     
-    with PyRS() as pyrs:
+    name = 'cup'
+    w = 1280
+    h = 720
+
+
+    chair_index = coco_label_names.index(name)
+    with PyRS(w=w, h=h) as pyrs:
         print('Modes:')
-        print('\tSave RGB and Depths:\tp')
-        print('\tChange preset:\tc')
         print('\tExit:\tq')
 
         preset = pyrs.get_depths_preset()
@@ -77,34 +81,34 @@ if __name__ == '__main__':
 
             color = color_image.swapaxes(2, 1).swapaxes(1, 0)
             bboxes, labels, scores, masks = model.predict([color])
-            bbox, label, score, mask = bboxes[0], np.asarray(labels[0],dtype=np.int32), scores[0], masks[0]
+            bbox, label, score, mask = bboxes[0], np.asarray(labels[0], dtype=np.int32), scores[0], masks[0]
 
             # use chair as example:
             label_index = np.where(label == chair_index)
             if label_index[0].any():
                 label_index = label_index[0][0]
+                
                 chair_mask = mask[label_index]
                 chair_depth = np.multiply(depths_image, chair_mask)
-            else:
-                chair_depth = np.zeros([480, 640])
 
+                y1, x1, y2, x2 = [int(n) for n in bbox[label_index]]
+                cv2.rectangle(color_image, (x1, y1), (x2, y2), (0,255,0), 2)
+                cv2.putText(color_image, name, (x1 + 10, y1 + 10), 0, 0.3, (0,255,0))
+
+            else:
+                chair_depth = np.zeros([h, w])
+            
             chair_image = cv2.applyColorMap(cv2.convertScaleAbs(chair_depth, None, 0.5, 0), cv2.COLORMAP_JET)
+
+
+
+            images = np.hstack((color_image, chair_image))
+            
             # Show image
             cv2.namedWindow('Chair Tracker', cv2.WINDOW_AUTOSIZE)
-            cv2.imshow('Chair Tracker', chair_image)
-            key = cv2.waitKey(100)
+            cv2.imshow('Chair Tracker', images)
+            key = cv2.waitKey(10)
 
             if key == ord('q'):
                 # end OpenCV loop
                 break
-            elif key == ord('p'):
-                # save rgb and depths
-                cv2.imwrite("rgb.png", color_image)
-                cv2.imwrite("depths.png", depths_image)
-            elif key == ord('c'):
-                # change preset
-                preset = preset + 1
-                max_ = pyrs.get_depths_visual_preset_max_range()
-                preset = preset % max_
-                pyrs.set_depths_preset(preset)
-                preset_name = pyrs.get_depths_preset_name(preset)
