@@ -137,6 +137,7 @@ if __name__ == '__main__':
         print('Modes:')
         print('\tSave RGB and Depths:\tp')
         print('\tChange preset:\tc')
+        print('\tSave Intrinsic:\ti')
         print('\tExit:\tq')
 
         preset = pyrs.get_depths_preset()
@@ -165,8 +166,6 @@ if __name__ == '__main__':
             cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
             cv2.imshow('RealSense', images)
             key = cv2.waitKey(1)
-
-
 
             if key == ord('q'):
                 # end OpenCV loop

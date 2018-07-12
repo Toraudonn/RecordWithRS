@@ -3,12 +3,12 @@ import os
 
 
 data_path = {
-
+    'hoge': 'hoge'
 }
 
 data_file = {
     'root': '',
-    'rgb': ''
+    'rgb': '',
     'depth': '' 
 }
 
