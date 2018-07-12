@@ -112,3 +112,6 @@ if __name__ == '__main__':
             if key == ord('q'):
                 # end OpenCV loop
                 break
+            elif key == ord('p'):
+                # save rgb and depths
+                cv2.imwrite("tracker.png", images)
