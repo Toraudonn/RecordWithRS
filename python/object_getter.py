@@ -108,12 +108,17 @@ if __name__ == "__main__":
                     os.makedirs(object_save_path)
                 
                 mask = masks[i]
-                score = scores[i]  #TODO: may use for threshold 
+                score = scores[i]
 
+                if score < 0.70:
+                    # don't get objects that's not really accurate
+                    continue
+                
+                # multiply mask with depth frame
                 mask_with_depth = np.multiply(depth_frame, mask)
 
-                #FIXME: bad algorithm
                 mask_flattened = mask_with_depth.flatten()
+                # Get all indicies that has depth points
                 non_zero_indicies = np.nonzero(mask_flattened)[0]
 
                 points = np.zeros((len(non_zero_indicies), 3))
@@ -121,17 +126,16 @@ if __name__ == "__main__":
                     Z = mask_flattened[index]
                     x, y = index % 640, index // 640
 
+                    # get X and Y converted from pixel (x, y) using Z and intrinsic
                     X, Y = o3_chain.calc_xy(x, y, Z)
                     # print('x: {}, y: {}, depth: {}'.format(X, Y, Z))
 
+                    # append to points
                     points[i] = np.asarray([X, Y, Z])
 
-
-                # if there
                 file_number = len([a for a in os.listdir(object_save_path) if tag in a])
                 # print(file_number)
                 csv_name = tag + '_' + str(file_number) + '.csv' if file_number > 0 else tag + '.csv'
 
                 csv_path = os.path.join(object_save_path, csv_name)
                 np.savetxt(csv_path, points, delimiter=",")
-    

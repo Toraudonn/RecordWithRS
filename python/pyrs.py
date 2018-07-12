@@ -1,3 +1,5 @@
+import os
+import json
 import pyrealsense2 as rs
 import numpy as np
 
@@ -21,6 +23,7 @@ class PyRS:
         self._pipeline = rs.pipeline()
         self._config = rs.config()
         self._config.enable_stream(rs.stream.color, w, h, rs.format.bgr8, frame_rate)
+        self.intrinsic = None
         if depths:
             self._preset = 3
             # Presets:
@@ -105,10 +108,32 @@ class PyRS:
     def get_depths_frame(self):
         '''Returns depth image as Numpy array'''
         return self._depths_image
+
+    def get_intrinsic(self, as_json=False, path=None):
+        '''Return Camera Intrinsic as json'''
+        assert self._context, "Has not started pipeline yet"
+        if self.intrinsic is None:
+            print("Getting Intrinsics for Camera...")
+            profile = self._context.get_stream(rs.stream.depth)
+            self.intrinsic = profile.as_video_stream_profile().get_intrinsics()
+        intrinsic = self._intrinsic2dict(self.intrinsic)  # dict
+        if as_json:
+            assert path, "You must add path for saving intrinsics"
+            intrinsic_as_json = json.dumps(intrinsic)
+            with open(os.path.join(path, 'realsense_intrinsic.json'), 'w') as f:
+                    intrinsic_as_json = json.dump(intrinsic, f, sort_keys=False,
+                                                                indent=4,
+                                                                ensure_ascii=False)
+            return intrinsic_as_json
+        return intrinsic
+
+    def _intrinsic2dict(self, i):
+        mat = [i.ppx, 0, 0, 0, i.ppy, 0, i.fx, i.fy, 1]
+        return {'width': i.width, 'height': i.height, 'intrinsic_matrix': mat}
         
 
 if __name__ == '__main__':
-    with PyRS() as pyrs:
+    with PyRS(h=720, w=1280) as pyrs:
         print('Modes:')
         print('\tSave RGB and Depths:\tp')
         print('\tChange preset:\tc')
@@ -117,6 +142,7 @@ if __name__ == '__main__':
         preset = pyrs.get_depths_preset()
         preset_name = pyrs.get_depths_preset_name(preset)
         print('Preset: ', pyrs.get_depths_preset_name(preset))
+        print("Intrinsics: ", pyrs.get_intrinsic())
 
         while True:
             # Wait for a coherent pair of frames: depth and color
@@ -140,6 +166,8 @@ if __name__ == '__main__':
             cv2.imshow('RealSense', images)
             key = cv2.waitKey(1)
 
+
+
             if key == ord('q'):
                 # end OpenCV loop
                 break
@@ -154,3 +182,9 @@ if __name__ == '__main__':
                 preset = preset % max_
                 pyrs.set_depths_preset(preset)
                 preset_name = pyrs.get_depths_preset_name(preset)
+            elif key == ord('i'):
+                # save intrinsics
+                intrinsic_as_json = pyrs.get_intrinsic(True, "./static_data/")
+                
+
+
