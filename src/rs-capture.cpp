@@ -113,7 +113,7 @@ int main(int argc, char * argv[]) try
     {
         // Get current time and create a directory
         now = px::second_clock::local_time();
-        if(now.time_of_day().minutes() > mark_min)
+        if(now.time_of_day().minutes() > mark_min || now.time_of_day().minutes() == 0)
         {
             date_in_string = format_time(now);
 
@@ -128,6 +128,8 @@ int main(int argc, char * argv[]) try
             mark_min = int64_t(now.time_of_day().minutes());
             cnt = 0;
         }
+
+
 
         frameset data = pipe.wait_for_frames(); // Wait for next set of frames from the camera
         auto aligned_frames = align.process(data);
