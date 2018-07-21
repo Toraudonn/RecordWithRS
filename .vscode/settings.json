@@ -1,7 +1,11 @@
 {
     "files.associations": {
         "stdexcept": "cpp",
-        "array": "cpp"
+        "array": "cpp",
+        "functional": "cpp",
+        "ostream": "cpp",
+        "iosfwd": "cpp",
+        "iostream": "cpp"
     },
     "python.linting.enabled": false,
     "python.pythonPath": "/home/haruyaishikawa/anaconda3/envs/chainer/bin/python"

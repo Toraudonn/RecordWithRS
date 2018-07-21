@@ -8,7 +8,7 @@ project( rs-capture )
 set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
 
 include( CheckCXXCompilerFlag )
-CHECK_CXX_COMPILER_FLAG( "-std=c++11" COMPILER_SUPPORTS_CXX1 )
+CHECK_CXX_COMPILER_FLAG( "-std=c++11" COMPILER_SUPPORTS_CXX11 )
 CHECK_CXX_COMPILER_FLAG( "-std=c++0x" COMPILER_SUPPORTS_CXX0X )
 if(COMPILER_SUPPORTS_CXX11)
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" )
@@ -26,13 +26,25 @@ include( CMakeToolsHelpers OPTIONAL )
 #====================================================================================================================#
 # Dependencies:
 
+# Boost
+set( Boost_USE_STATIC_LIBS OFF )
+set( Boost_USE_MULTITHREADED ON )
+set( Boost_USE_STATIC_RUNTIME OFF )
+find_package( Boost COMPONENTS system filesystem date_time )
+if( NOT Boost_FOUND )
+    message( SEND_ERROR "Failed to find Boost" )
+    return()
+else()
+    include_directories( ${Boost_INCLUDE_DIRS} )
+endif()
+
 # OPENCV
 find_package( OpenCV REQUIRED )
 
 # REALSENSE
 find_library( RS_LIB realsense2 )
 
-set( DEPENDENCIES ${RS_LIB} ${OpenCV_LIBS} )
+set( DEPENDENCIES ${RS_LIB} ${OpenCV_LIBS} ${Boost_LIBRARIES} )
 
 #====================================================================================================================#
 

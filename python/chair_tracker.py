@@ -114,4 +114,6 @@ if __name__ == '__main__':
                 break
             elif key == ord('p'):
                 # save rgb and depths
+                cv2.imwrite("color_chair.png", color_image)
+                cv2.imwrite("depth_chair.png", depths_image)
                 cv2.imwrite("tracker.png", images)

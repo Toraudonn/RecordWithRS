@@ -1,17 +1,12 @@
 import sys
 import os
 
+external_disk_root = '/mnt/extHDD/'
 
-data_path = {
-    'hoge': 'hoge'
+folder_location = {
+    'rgb': 'rgb',
+    'depth': 'depth',
 }
-
-data_file = {
-    'root': '',
-    'rgb': '',
-    'depth': '' 
-}
-
 
 class FileManagement:
     def __init__(self):
