@@ -79,8 +79,6 @@ int main(int argc, char * argv[]) try
     
     auto sensor = selection.get_device().first<depth_sensor>();
     auto scale =  sensor.get_depth_scale();
-    
-    cerr << scale << endl;
 
     // Camera warmup
     frameset frames;
@@ -90,6 +88,7 @@ int main(int argc, char * argv[]) try
 
     rs2::align align(RS2_STREAM_COLOR);
 
+    // Setup path:
     string root_dir("/mnt/extHDD");
     string data_dir("raw_data");
     string data_path = create_dir(root_dir, data_dir);
@@ -113,7 +112,7 @@ int main(int argc, char * argv[]) try
     {
         // Get current time and create a directory
         now = px::second_clock::local_time();
-        if(now.time_of_day().minutes() > mark_min || now.time_of_day().minutes() == 0)
+        if(now.time_of_day().minutes() > mark_min || (now.time_of_day().minutes() == 0 && mark_min == 59) )
         {
             date_in_string = format_time(now);
 
@@ -129,8 +128,6 @@ int main(int argc, char * argv[]) try
             cnt = 0;
         }
 
-
-
         frameset data = pipe.wait_for_frames(); // Wait for next set of frames from the camera
         auto aligned_frames = align.process(data);
 
@@ -145,10 +142,10 @@ int main(int argc, char * argv[]) try
         // Update the window with new data
         if(cnt % 15 == 0)  {
             // for visualization
-            frame depth_vis = color_map(aligned_frames.get_depth_frame()); // for visualization (comment out if needed)
-            auto im_d_vis = frame_to_mat(depth_vis); 
-            imshow("Depth", im_d_vis);
-            imshow("RGB", im_c);
+            //frame depth_vis = color_map(aligned_frames.get_depth_frame()); // for visualization (comment out if needed)
+            //auto im_d_vis = frame_to_mat(depth_vis); 
+            //imshow("Depth", im_d_vis);
+            //imshow("RGB", im_c);
             cerr << "Frame: " << cnt << endl;
             waitKey(1);                  
         }
