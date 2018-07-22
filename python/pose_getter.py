@@ -20,8 +20,8 @@ except:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Pose Getter')
-    parser.add_argument('--data', default= '../data',help='relative data path from where you use this program')
-    parser.add_argument('--save', default= 'pose',help='relative saving directory from where you use this program')
+    parser.add_argument('--data', default= '/mnt/extHDD/raw_data/20180722_1643/',help='relative data path from where you use this program')
+    parser.add_argument('--save', default= '/mnt/extHDD/save_data/20180722_1643/pose',help='relative saving directory from where you use this program')
     parser.add_argument('--gpu', '-g', type=int, default=0, help='GPU ID (negative value indicates CPU)')
     args = parser.parse_args()
 
@@ -30,8 +30,8 @@ if __name__ == "__main__":
     chainer.config.train = False
 
     # get directory of data (rgb, depth)
-    data_path = os.path.join(dir_path, args.data)
-    save_path = os.path.join(data_path, args.save)
+    data_path = os.path.join("/", args.data)
+    save_path = os.path.join("/", args.save)
     assert os.path.exists(data_path), "Could not find data directory in the path: {}".format(data_path)
     print('Getting data from: {}'.format(data_path))
     if not os.path.exists(save_path):
@@ -88,6 +88,6 @@ if __name__ == "__main__":
                         joints[i] = np.asarray([X, Y, Z])
                         print('x: {}, y: {}, depth: {}'.format(X, Y, Z))
                 
-                # csv_path = os.path.join(save_path, csv_name)
-                # np.savetxt(csv_path, joints, delimiter=",")
+                csv_path = os.path.join(save_path, csv_name)
+                np.savetxt(csv_path, joints, delimiter=",")
     

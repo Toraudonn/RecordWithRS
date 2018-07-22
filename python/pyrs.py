@@ -25,7 +25,7 @@ class PyRS:
         self._config.enable_stream(rs.stream.color, w, h, rs.format.bgr8, frame_rate)
         self.intrinsic = None
         if depths:
-            self._preset = 3
+            self._preset = 1
             # Presets:
             # 0: Custom
             # 1: Default
@@ -172,8 +172,8 @@ if __name__ == '__main__':
                 break
             elif key == ord('p'):
                 # save rgb and depths
-                cv2.imwrite("rgb.png", color_image)
-                cv2.imwrite("depths.png", depths_image)
+                cv2.imwrite("static_data/rgb.png", color_image)
+                cv2.imwrite("static_data/depth.png", depths_image)
             elif key == ord('c'):
                 # change preset
                 preset = preset + 1

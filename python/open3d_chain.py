@@ -45,6 +45,12 @@ class Open3D_Chain:
     
     def get_pcd(self):
         return o3.create_point_cloud_from_rgbd_image(self.rgbd, self.camera_intrinsic)
+
+    def save_pcd(self):
+        pcd = self.get_pcd()
+        pcd.transform([[1000, 0, 0, 0], [0, -1000, 0, 0], [0, 0, -1000, 0], [0, 0, 0, 1]])
+        o3.write_point_cloud('static_data/camera_pc.ply', pcd)
+
     
     def calc_xy(self, x, y, z=None):
         '''

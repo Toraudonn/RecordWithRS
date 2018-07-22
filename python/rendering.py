@@ -192,7 +192,7 @@ class CustomVisualizer:
         self.vis.get_render_option().load_from_json(
             "static_data/renderoption.json")
         self.vis.add_geometry(self.base)
-        self.trajectory = o3.read_pinhole_camera_trajectory("pinholeCameraTrajectory3.json")
+        self.trajectory = o3.read_pinhole_camera_trajectory("static_data/pinholeCameraTrajectory3.json")
         self.custom_view()
         self.vis.run()
 
@@ -221,7 +221,7 @@ class CustomVisualizer:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pose Getter')
-    parser.add_argument('--data', default= '../data',help='relative data path from where you use this program')
+    parser.add_argument('--data', default= '/mnt/extHDD/save_data/20180722_1643/',help='relative data path from where you use this program')
     parser.add_argument('--static', default='static_data', help='static data location')
     args = parser.parse_args()
 
@@ -247,7 +247,7 @@ if __name__ == '__main__':
     vis = CustomVisualizer(pc_room)
     vis.intialize_visualizer()
 
-    for filename in sorted(os.listdir(pose_path)):
+    for filename in sorted(os.listdir(pose_path)):  #FIXME: didn't sort by number, but name
         if filename.endswith('.csv'):
             tag = filename.split('.')[0]
 

@@ -14,4 +14,5 @@ if __name__ == "__main__":
     plt.title('Depth image')
     plt.imshow(chain.get_depths(True))
     plt.show()
+    #chain.save_pcd()
     chain.compare_with_room()
