@@ -31,7 +31,7 @@ def main():
 
     # just get one
     files = os.listdir(ob_path)
-    filename = files[2]
+    filename = files[0]
     csv_path = os.path.join(ob_path, filename)
     
     np_pc = np.loadtxt(csv_path, delimiter=',')
