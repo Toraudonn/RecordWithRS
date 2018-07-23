@@ -56,7 +56,6 @@ class Open3D_Chain:
     def save_pcd(self):
         pcd = self.get_pcd()
         o3.write_point_cloud('static_data/camera_pc.ply', pcd)
-
     
     def calc_xy(self, x, y, z=None):
         '''
