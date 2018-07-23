@@ -128,7 +128,7 @@ class PyRS:
         return intrinsic
 
     def _intrinsic2dict(self, i):
-        mat = [i.ppx, 0, 0, 0, i.ppy, 0, i.fx, i.fy, 1]
+        mat = [i.fx, 0, 0, 0, i.fy, 0, i.ppx, i.ppy, 1]
         return {'width': i.width, 'height': i.height, 'intrinsic_matrix': mat}
         
 

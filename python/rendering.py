@@ -247,18 +247,14 @@ if __name__ == '__main__':
     vis = CustomVisualizer(pc_room)
     vis.intialize_visualizer()
 
-    for filename in sorted(os.listdir(pose_path)):  #FIXME: didn't sort by number, but name
-        if filename.endswith('.csv'):
-            tag = filename.split('.')[0]
+    files = os.listdir(pose_path)
+    filenames = sorted(files, key=lambda f: int(''.join(filter(str.isdigit, f))))
 
-            #FIXME: For now don't think about multiple poses in 1 frame
-            if len(tag.split('_')) > 1:
-                continue
-            
-            print('\nimage: ', tag)
-
+    for fn in filenames:  #FIXME: didn't sort by number, but name
+        if fn.endswith('.csv'):
+            print(fn)
             # get joints data and turn it into numpy array
-            csv_path = os.path.join(pose_path, filename)
+            csv_path = os.path.join(pose_path, fn)
             raw_joints = np.loadtxt(csv_path, delimiter=',')
             
             joints = Joints(P, raw_joints)

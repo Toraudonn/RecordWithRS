@@ -50,12 +50,17 @@ if __name__ == "__main__":
     # camera params
     o3_chain = Open3D_Chain()
 
-    # Loop:
-    for filename in os.listdir(rgb_path):
-        if filename.endswith(".png"): 
-            tag = filename.split('.')[0]
-            print('\nimage: ', tag)
+    # sort rgb files before looping
+    # order matters!
+    files = os.listdir(rgb_path)
+    #files = [int(''.join(filter(str.isdigit, f))) for f in files]
+    files.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
 
+    # Loop:
+    pose_num = 0
+    for filename in files:
+        if filename.endswith(".png"): 
+            print('\nimage: ', filename)
             # find the corresponding depth image
             rgb_img = os.path.join(rgb_path, filename)
             depth_img = os.path.join(depth_path, filename)
@@ -68,13 +73,9 @@ if __name__ == "__main__":
 
             # inference
             poses, scores = pose_detector(o3_chain.get_rgb())
-            # print(poses)
-            if len(poses) > 2:
-                print('too many poses!')
-                continue
 
             for i, pose in enumerate(poses):
-                csv_name = tag + '_' + str(i) + '.csv' if i > 0 else tag + '.csv'
+                csv_name = str(pose_num) + '.csv'
 
                 joints = np.zeros((len(JointType), 3))
 
@@ -86,8 +87,10 @@ if __name__ == "__main__":
                         # Depth = 0 means that depth data was unavailable
                         X, Y = o3_chain.calc_xy(x, y, Z)
                         joints[i] = np.asarray([X, Y, Z])
-                        print('x: {}, y: {}, depth: {}'.format(X, Y, Z))
+                        # print('x: {}, y: {}, depth: {}'.format(X, Y, Z))
                 
                 csv_path = os.path.join(save_path, csv_name)
                 np.savetxt(csv_path, joints, delimiter=",")
+                
+                pose_num += 1
     

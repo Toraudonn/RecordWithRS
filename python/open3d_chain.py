@@ -7,7 +7,7 @@ class Open3D_Chain:
     Open3D Chain for easy rendering
     '''
     def __init__(self):
-        self.camera_intrinsic = o3.read_pinhole_camera_intrinsic("static_data/d415.json")
+        self.camera_intrinsic = o3.read_pinhole_camera_intrinsic("static_data/realsense_intrinsic.json")
         self.K = np.asarray(self.camera_intrinsic.intrinsic_matrix)
 
     def change_image(self, rgb_path, depths_path):
@@ -44,11 +44,17 @@ class Open3D_Chain:
             return np.asarray(self.depths)
     
     def get_pcd(self):
-        return o3.create_point_cloud_from_rgbd_image(self.rgbd, self.camera_intrinsic)
+        pcd = o3.create_point_cloud_from_rgbd_image(self.rgbd, self.camera_intrinsic)
+        # change view
+        pcd.transform(
+            [[1000, 0, 0, 0], 
+             [0, -1000, 0, 0], 
+             [0, 0, -1000, 0], 
+             [0, 0, 0, 1]])
+        return pcd
 
     def save_pcd(self):
         pcd = self.get_pcd()
-        pcd.transform([[1000, 0, 0, 0], [0, -1000, 0, 0], [0, 0, -1000, 0], [0, 0, 0, 1]])
         o3.write_point_cloud('static_data/camera_pc.ply', pcd)
 
     
@@ -76,7 +82,24 @@ class Open3D_Chain:
         pcd = self.get_pcd()
 
         P = np.loadtxt('static_data/T.csv', delimiter=',')
-        pcd.transform([[1000, 0, 0, 0], [0, -1000, 0, 0], [0, 0, -1000, 0], [0, 0, 0, 1]])
         pcd.transform(P)
 
         o3.draw_geometries([pc_room, pcd])
+
+
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+
+    chain = Open3D_Chain()
+    chain.change_image("static_data/rgb.png", "static_data/depth.png")
+
+    chain.create_rgbd()
+    plt.subplot(1, 2, 1)
+    plt.title('Grayscale image')
+    plt.imshow(chain.get_rgb(True))
+    plt.subplot(1, 2, 2)
+    plt.title('Depth image')
+    plt.imshow(chain.get_depths(True))
+    plt.show()
+    chain.save_pcd()
+    chain.compare_with_room()
