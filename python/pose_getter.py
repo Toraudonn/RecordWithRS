@@ -1,7 +1,7 @@
 import argparse
 import sys
 import os
-from datetime import datetime as dt
+from datetime import datetime as datetime
 
 import numpy as np
 import chainer
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     print('Getting data from: {}'.format(args.data))
     dm = DataManagement(args.data)
     after = dt(2018, 7, 23, 14, 0, 0)
-    before = dt(2018, 7, 23, 14, 59, 0)
+    before = dt(2018, 7, 23, 15, 0, 0)
     datetimes = dm.get_datetimes_in(after, before)
 
     # camera params
@@ -47,19 +47,21 @@ if __name__ == "__main__":
                                 "models/coco_posenet.npz"), 
                                 device=args.gpu)
 
-    for dt in datetimes:
-        save_path = dm.get_save_directory(dt)
+    for datetime in datetimes:
+        save_path = dm.get_save_directory(datetime)
         save_path = os.path.join(save_path, args.save)
         if not dm.check_path_exists(save_path):
             print('Making a save directory in: {}'.format(save_path))
             os.makedirs(save_path)
+        else:
+            continue
 
-        rgb_path = dm.get_rgb_path(dt)
-        depth_path = dm.get_depth_path(dt)
+        rgb_path = dm.get_rgb_path(datetime)
+        depth_path = dm.get_depth_path(datetime)
 
         # sort rgb files before looping
         # order matters!
-        filenames = dm.get_sorted_rgb_images(dt)
+        filenames = dm.get_sorted_rgb_images(datetime)
     
         # Loop:
         pose_num = 0

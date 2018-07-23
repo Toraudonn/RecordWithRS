@@ -1,7 +1,7 @@
 import argparse
 import sys
 import os
-from datetime import datetime as dt
+from datetime import datetime as datetime
 
 import chainer
 from chainercv import utils
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     print('Getting data from: {}'.format(args.data))
     dm = DataManagement(args.data)
     after = dt(2018, 7, 23, 14, 0, 0)
-    before = dt(2018, 7, 23, 14, 59, 0)
+    before = dt(2018, 7, 23, 15, 0, 0)
     datetimes = dm.get_datetimes_in(after, before)
 
     # setup chainer mask-rcnn
@@ -77,35 +77,28 @@ if __name__ == "__main__":
     # open3d chain
     o3_chain = Open3D_Chain()
 
-    for dt in datetimes:
-        save_path = dm.get_save_directory(dt)
-        save_path = os.path.join(save_path, args.save)
-
+    for datetime in datetimes:
+        print(datetime)
         # get directory of data (rgb, depth)
-        save_path = dm.get_save_directory(dt)
+        save_path = dm.get_save_directory(datetime)
         save_path = os.path.join(save_path, args.save)
         if not dm.check_path_exists(save_path):
             print('Making a save directory in: {}'.format(save_path))
             os.makedirs(save_path)
         else:
-            print('Removing {}'.format(save_path))
-            dm.remove_directories(save_path)
-            os.makedirs(save_path)
+            continue
 
-
-        rgb_path = dm.get_rgb_path(dt)
-        depth_path = dm.get_depth_path(dt)
+        rgb_path = dm.get_rgb_path(datetime)
+        depth_path = dm.get_depth_path(datetime)
 
         # sort rgb files before looping
         # order matters!
-        filenames = dm.get_sorted_rgb_images(dt)
+        filenames = dm.get_sorted_rgb_images(datetime)
         
         # Loop:
         for fn in filenames:
             if fn.endswith(".png"): 
-                tag = fn.split('.')[0]
-                print('\nimage: ', tag)
-
+                print(fn)
                 # find the corresponding depth image
                 rgb_img = os.path.join(rgb_path, fn)
                 depth_img = os.path.join(depth_path, fn)

@@ -2,6 +2,8 @@ import open3d as o3
 import numpy as np
 import os
 
+
+#FIXME: change name to Open3DChai
 class Open3D_Chain:
     '''
     Open3D Chain for easy rendering

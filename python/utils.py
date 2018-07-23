@@ -128,7 +128,7 @@ class DataManagement(FileManagement):
         '''Get datetimes between two datetimes'''
         assert before - after > timedelta(seconds=0)
         datetimes = np.asarray(self.get_datetimes())
-        return [t for t in datetimes if t >= after and t <= before]
+        return [t for t in datetimes if t >= after and t < before]
 
     
 def main():
@@ -142,7 +142,7 @@ def main():
     #     print("\t", len(dm.get_rgb_images(dt)))
 
     after = dt(2018, 7, 23, 14, 0, 0)
-    before = dt(2018, 7, 23, 14, 59, 0)
+    before = dt(2018, 7, 23, 15, 0, 0)
     between = dm.get_datetimes_in(after, before)
 
     print(len(between))
