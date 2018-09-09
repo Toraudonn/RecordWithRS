@@ -50,8 +50,8 @@ if __name__ == "__main__":
 
     print('Getting data from: {}'.format(args.data))
     dm = DataManagement(args.data)
-    after = dt(2018, 7, 23, 14, 0, 0)
-    before = dt(2018, 7, 23, 15, 0, 0)
+    after = dt(2018, 9, 9, 0, 0, 0)
+    before = dt(2018, 9, 10, 0, 0, 0)
     datetimes = dm.get_datetimes_in(after, before)
 
     # setup chainer mask-rcnn
@@ -73,6 +73,7 @@ if __name__ == "__main__":
 
     # open3d chain
     o3_chain = Open3D_Chain()
+    w = 1280
 
     for datetime in datetimes:
         print(datetime)
@@ -136,7 +137,7 @@ if __name__ == "__main__":
                     points = np.zeros((len(non_zero_indicies), 3))
                     for i, index in enumerate(non_zero_indicies):
                         Z = mask_flattened[index]
-                        x, y = index % 640, index // 640
+                        x, y = index % w, index // w
 
                         # get X and Y converted from pixel (x, y) using Z and intrinsic
                         X, Y = o3_chain.calc_xy(x, y, Z)
@@ -146,13 +147,20 @@ if __name__ == "__main__":
                         points[i] = np.asarray([X, Y, Z])
 
                     
-                    csv_name = tag + '.csv'
+                    csv_name = fn.split('.')[0] + '.csv'
                     csv_path = os.path.join(object_save_path, csv_name)
-                    if csv_name in os.listdir(object_save_path):
+                    n = 0
+
+                    while csv_name in os.listdir(object_save_path):
+                    # if csv_name in os.listdir(object_save_path):
                         #FIXME: Currently, just append if there are multiple instances of objects in frame
                         # this is bad since when this code is rerun, it will keep updating the csv...
-                        print("before: ", points.shape)
-                        points = np.concatenate([points, np.loadtxt(open(csv_path, "rb"), delimiter=",")], axis=0)
-                        print("after: ", points.shape)
+                        # print("before: ", points.shape)
+                        # points = np.concatenate([points, np.loadtxt(open(csv_path, "rb"), delimiter=",")], axis=0)
+                        # print("after: ", points.shape)
+
+                        csv_name = fn.split('.')[0] + '_' + str(n) + '.csv'
+                        csv_path = os.path.join(object_save_path, csv_name)
+                        n += 1
                                         
                     np.savetxt(csv_path, points, delimiter=",")
