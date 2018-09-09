@@ -9,15 +9,15 @@ import matplotlib.pyplot as plot
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 abs_maskrcnn = os.path.join(dir_path, 'maskrcnn')
-assert os.path.exists(abs_maskrcnn)
-sys.path.insert(0, abs_maskrcnn)
+assert os.path.exists(abs_maskrcnn), "path doesn't exist"
 try:
-    from mask_rcnn_train_chain import MaskRCNNTrainChain
-    from utils.bn_utils import freeze_bn, bn_to_affine
-    from mask_rcnn_resnet import MaskRCNNResNet
-    from utils.vis_bbox import vis_bbox
-except:
-    print('Check the path for Mask-RCNN Directory')
+    from maskrcnn.mask_rcnn_train_chain import MaskRCNNTrainChain
+    from maskrcnn.utils.bn_utils import freeze_bn, bn_to_affine
+    from maskrcnn.mask_rcnn_resnet import MaskRCNNResNet
+    from maskrcnn.utils.vis_bbox import vis_bbox
+except Exception as e:
+    print(e)
+
 
 
 def main():

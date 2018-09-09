@@ -7,6 +7,7 @@ import chainer
 from chainercv import utils
 import numpy as np
 import matplotlib.pyplot as plot
+from datetime import datetime as dt
 
 from utils import DataManagement
 from open3d_chain import Open3D_Chain
@@ -15,13 +16,9 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 abs_maskrcnn = os.path.join(dir_path, 'maskrcnn')
 assert os.path.exists(abs_maskrcnn), "path doesn't exist"
 try:
-    print("hello1")
     from maskrcnn.mask_rcnn_train_chain import MaskRCNNTrainChain
-    print("hello2")
     from maskrcnn.utils.bn_utils import freeze_bn, bn_to_affine
-    print("hello3")
     from maskrcnn.mask_rcnn_resnet import MaskRCNNResNet
-    print("hello4")
     from maskrcnn.utils.vis_bbox import vis_bbox
 except Exception as e:
     print(e)

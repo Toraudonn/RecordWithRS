@@ -11,15 +11,15 @@ from chainercv import utils
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 abs_maskrcnn = os.path.join(dir_path, 'maskrcnn')
-assert os.path.exists(abs_maskrcnn)
-sys.path.insert(0, abs_maskrcnn)
+assert os.path.exists(abs_maskrcnn), "path doesn't exist"
 try:
-    from mask_rcnn_train_chain import MaskRCNNTrainChain
-    from utils.bn_utils import freeze_bn, bn_to_affine
-    from mask_rcnn_resnet import MaskRCNNResNet
-    from utils.vis_bbox import vis_bbox
-except:
-    print('Check the path for Mask-RCNN Directory')
+    from maskrcnn.mask_rcnn_train_chain import MaskRCNNTrainChain
+    from maskrcnn.utils.bn_utils import freeze_bn, bn_to_affine
+    from maskrcnn.mask_rcnn_resnet import MaskRCNNResNet
+    from maskrcnn.utils.vis_bbox import vis_bbox
+except Exception as e:
+    print(e)
+
 
 
 if __name__ == '__main__':
@@ -55,14 +55,11 @@ if __name__ == '__main__':
     model.to_gpu()
     bn_to_affine(model)
 
-
-    
-    name = 'cup'
+    name = 'chair'
     w = 1280
     h = 720
 
-
-    chair_index = coco_label_names.index(name)
+    item_index = coco_label_names.index(name)
     with PyRS(w=w, h=h) as pyrs:
         print('Modes:')
         print('\tExit:\tq')
@@ -78,35 +75,34 @@ if __name__ == '__main__':
             # Get images as numpy arrays
             color_image = pyrs.get_color_image()
             depths_image = pyrs.get_depths_frame()
+            all_depths = np.zeros([h, w])
 
             color = color_image.swapaxes(2, 1).swapaxes(1, 0)
             bboxes, labels, scores, masks = model.predict([color])
-            bbox, label, score, mask = bboxes[0], np.asarray(labels[0], dtype=np.int32), scores[0], masks[0]
 
-            # use chair as example:
-            label_index = np.where(label == chair_index)
-            if label_index[0].any():
-                label_index = label_index[0][0]
+            if len(labels) > 0:
+                bbox, label, score, mask = bboxes[0], np.asarray(labels[0], dtype=np.int32), scores[0], masks[0]
                 
-                chair_mask = mask[label_index]
-                chair_depth = np.multiply(depths_image, chair_mask)
+                items = np.where(label == item_index)[0]
+                if items.any():
+                    for item in items:
+                        item_mask = mask[item]
+                        item_depth = np.multiply(depths_image, item_mask)
+                        
+                        all_depths = np.add(all_depths, item_depth)
 
-                y1, x1, y2, x2 = [int(n) for n in bbox[label_index]]
-                cv2.rectangle(color_image, (x1, y1), (x2, y2), (0,255,0), 2)
-                cv2.putText(color_image, name, (x1 + 10, y1 + 10), 0, 0.3, (0,255,0))
-
-            else:
-                chair_depth = np.zeros([h, w])
+                        # beautify:
+                        y1, x1, y2, x2 = [int(n) for n in bbox[item]]
+                        cv2.rectangle(color_image, (x1, y1), (x2, y2), (0,255,0), 2)
+                        cv2.putText(color_image, name, (x1 + 10, y1 + 10), 0, 0.3, (0,255,0))
             
-            chair_image = cv2.applyColorMap(cv2.convertScaleAbs(chair_depth, None, 0.5, 0), cv2.COLORMAP_JET)
+            items_image = cv2.applyColorMap(cv2.convertScaleAbs(all_depths, None, 0.5, 0), cv2.COLORMAP_JET)
 
-
-
-            images = np.hstack((color_image, chair_image))
+            images = np.hstack((color_image, items_image))
             
             # Show image
-            cv2.namedWindow('Chair Tracker', cv2.WINDOW_AUTOSIZE)
-            cv2.imshow('Chair Tracker', images)
+            cv2.namedWindow('Item Tracker', cv2.WINDOW_AUTOSIZE)
+            cv2.imshow('Item Tracker', images)
             key = cv2.waitKey(10)
 
             if key == ord('q'):
@@ -114,6 +110,6 @@ if __name__ == '__main__':
                 break
             elif key == ord('p'):
                 # save rgb and depths
-                cv2.imwrite("data/color_chair.png", color_image)
-                cv2.imwrite("data/depth_chair.png", depths_image)
+                cv2.imwrite("data/color_{}.png".format(name), color_image)
+                cv2.imwrite("data/depth_{}.png".format(name), depths_image)
                 cv2.imwrite("data/tracker.png", images)
