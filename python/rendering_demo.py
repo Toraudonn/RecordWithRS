@@ -40,7 +40,7 @@ if __name__ == "__main__":
     P = np.loadtxt(P_matrix_filename, delimiter=',')
     
     # Load room
-    room_ply = os.path.join(static_path, 'room_mode_1.ply')
+    room_ply = os.path.join(static_path, 'room_A.ply')
     pc_room = o3.read_point_cloud(room_ply)
 
     # pose path

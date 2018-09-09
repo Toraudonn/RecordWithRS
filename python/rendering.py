@@ -192,7 +192,7 @@ class CustomVisualizer:
         self.vis.get_render_option().load_from_json(
             "static_data/renderoption.json")
         self.vis.add_geometry(self.base)
-        self.trajectory = o3.read_pinhole_camera_trajectory("static_data/pinholeCameraTrajectory3.json")
+        self.trajectory = o3.read_pinhole_camera_trajectory("static_data/pinholeCameraTrajectory.json")
         self.custom_view()
         self.vis.run()
 
@@ -221,7 +221,7 @@ class CustomVisualizer:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pose Getter')
-    parser.add_argument('--data', default= '/mnt/extHDD/save_data/20180722_1643/',help='relative data path from where you use this program')
+    parser.add_argument('--data', default= '/mnt/extHDD/save_data/20180909_1316/',help='relative data path from where you use this program')
     parser.add_argument('--static', default='static_data', help='static data location')
     args = parser.parse_args()
 
@@ -237,7 +237,7 @@ if __name__ == '__main__':
     P = np.loadtxt(P_matrix_filename, delimiter=',')
 
     # Load room
-    room_ply = os.path.join(static_path, 'room_mode_1.ply')
+    room_ply = os.path.join(static_path, 'room_A.ply')
     pc_room = o3.read_point_cloud(room_ply)
 
     # pose path

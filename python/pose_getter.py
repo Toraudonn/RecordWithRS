@@ -1,7 +1,7 @@
 import argparse
 import sys
 import os
-from datetime import datetime as datetime
+from datetime import datetime as dt
 
 import numpy as np
 import chainer
@@ -34,8 +34,8 @@ if __name__ == "__main__":
     # get directory of data (rgb, depth)
     print('Getting data from: {}'.format(args.data))
     dm = DataManagement(args.data)
-    after = dt(2018, 7, 23, 14, 0, 0)
-    before = dt(2018, 7, 23, 15, 0, 0)
+    after = dt(2018, 9, 9, 0, 0, 0)
+    before = dt(2018, 9, 10, 0, 0, 0)
     datetimes = dm.get_datetimes_in(after, before)
 
     # camera params
@@ -46,6 +46,8 @@ if __name__ == "__main__":
                                 os.path.join(abs_op_lib, 
                                 "models/coco_posenet.npz"), 
                                 device=args.gpu)
+
+    print(datetimes)
 
     for datetime in datetimes:
         save_path = dm.get_save_directory(datetime)
