@@ -95,8 +95,10 @@ if __name__ == '__main__':
                         y1, x1, y2, x2 = [int(n) for n in bbox[item]]
                         cv2.rectangle(color_image, (x1, y1), (x2, y2), (0,255,0), 2)
                         cv2.putText(color_image, name, (x1 + 10, y1 + 10), 0, 0.3, (0,255,0))
+
+                    all_depths *= 255 / all_depths.max()
             
-            items_image = cv2.applyColorMap(cv2.convertScaleAbs(all_depths, None, 0.5, 0), cv2.COLORMAP_JET)
+            items_image = cv2.cvtColor(all_depths.astype(np.uint8), cv2.COLOR_GRAY2BGR)
 
             images = np.hstack((color_image, items_image))
             
