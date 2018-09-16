@@ -24,8 +24,8 @@ def main():
 
     print(datetime)
 
-    # item(dm, datetime)
-    pose(dm, datetime)
+    item(dm, datetime)
+    # pose(dm, datetime)
     
 
 
@@ -68,7 +68,7 @@ def item(dm, datetime):
 
     print('objects: ', os.listdir(data_path))
 
-    ob_name = 'sink'
+    ob_name = 'chair'
     ob_path = os.path.join(data_path, ob_name)
 
     files = os.listdir(ob_path)
