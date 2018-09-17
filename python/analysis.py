@@ -16,37 +16,34 @@ from entity import params, JointType
 def main():
     dm = DataManagement()
     after = dt(2018, 9, 9, 13, 7, 0)
-    before = dt(2018, 9, 9, 13, 8, 0)
+    before = dt(2018, 9, 9, 13, 16, 0)
     datetimes = dm.get_datetimes_in(after, before)
 
-    assert len(datetimes) == 1
-    datetime = datetimes[0]
+    # item(dm, datetimes)
+    pose(dm, datetimes)
 
-    print(datetime)
-
-    item(dm, datetime)
-    # pose(dm, datetime)
     
 
 
-def pose(dm, datetime):
-
-    data_path = dm.get_save_directory(datetime)
-    data_path = os.path.join(data_path, 'pose')
-    files = dm.natural_sort(os.listdir(data_path))  # sorted files
-
-    joint_val = JointType.Nose.value
-
+def pose(dm, datetimes):
+    joint_val = JointType.RightHand.value
     print(JointType(joint_val))
+
+    csv_files = []
+    for datetime in datetimes: 
+        data_path = dm.get_save_directory(datetime)
+        data_path = os.path.join(data_path, 'pose')
+        if os.path.exists(data_path):
+            sorted_files = dm.natural_sort(os.listdir(data_path))  # sorted files
+            csv_files = csv_files + [os.path.join(data_path, csv) for csv in sorted_files]
 
     P_matrix_filename = os.path.join('static_data', 'T.csv')
     P = np.loadtxt(P_matrix_filename, delimiter=',')
 
-    print("number of file: ", len(files))
-    joint = np.zeros((len(files), 3))
-    for i, f in enumerate(files):
-        csv_path = os.path.join(data_path, f)
-        points = np.loadtxt(csv_path, delimiter=',')
+    print("number of file: ", len(csv_files))
+    joint = np.zeros((len(csv_files), 3))
+    for i, csv in enumerate(csv_files):
+        points = np.loadtxt(csv, delimiter=',')
         point = points[joint_val]
         if (point == [0,0,0]).all():
             joint[i] = np.asarray([np.nan, np.nan, np.nan])
@@ -57,33 +54,31 @@ def pose(dm, datetime):
     roll_joint = np.rollaxis(joint, 1)
     roll_joint.shape
 
-    show_location_map(roll_joint)
+    show_location_map(roll_joint, JointType(joint_val))
 
 
 
-def item(dm, datetime):
-
-    data_path = dm.get_save_directory(datetime)
-    data_path = os.path.join(data_path, 'objects')
-
-    print('objects: ', os.listdir(data_path))
-
-    ob_name = 'chair'
-    ob_path = os.path.join(data_path, ob_name)
-
-    files = os.listdir(ob_path)
-    print('number of files: ', len(files))
-    filename = files[0]
-    csv_path = os.path.join(ob_path, filename)
+def item(dm, datetimes):
+    ob_name = 'cup'
+    
+    csv_files = []
+    for datetime in datetimes:
+        data_path = dm.get_save_directory(datetime)
+        data_path = os.path.join(data_path, 'objects')
+        ob_path = os.path.join(data_path, ob_name)
+        # print('objects: ', os.listdir(data_path))
+        if os.path.exists(ob_path):
+            ordered_files = dm.natural_sort(os.listdir(ob_path))
+            csv_files = csv_files + [os.path.join(ob_path, csv) for csv in ordered_files]
+    
+    print('number of files: ', len(csv_files))
 
     P_matrix_filename = os.path.join('static_data', 'T.csv')
     P = np.loadtxt(P_matrix_filename, delimiter=',')
 
-    ordered_files = dm.natural_sort(files)
-    mean_of_points = np.zeros((len(ordered_files), 3))
-    for i, fn in enumerate(ordered_files):
-        csv_path = os.path.join(ob_path, fn)
-        points = np.loadtxt(csv_path, delimiter=',')
+    mean_of_points = np.zeros((len(csv_files), 3))
+    for i, csv in enumerate(csv_files):
+        points = np.loadtxt(csv, delimiter=',')
         mean = points.mean(0)
         real_world = convert2world(P, mean)
         mean_of_points[i] = real_world
@@ -93,7 +88,7 @@ def item(dm, datetime):
 
     # show_movement(mp)
 
-    show_location_map(mp)
+    show_location_map(mp, ob_name)
 
 
 
@@ -114,7 +109,7 @@ def show_movement(points):
     plt.show()
 
 
-def show_location_map(points):
+def show_location_map(points, name):
     xedges = [i for i in range(-2000, 2000, 50)]
     yedges = [i for i in range(-2000, 2000, 50)]
 
@@ -128,7 +123,7 @@ def show_location_map(points):
 
     fig = plt.figure()
 
-    ax = fig.add_subplot(111, title='object heat map',
+    ax = fig.add_subplot(111, title=name,
                         aspect='equal')
     X, Y = np.meshgrid(xedges, yedges)
     ax.pcolormesh(X, Y, H)

@@ -112,6 +112,6 @@ if __name__ == '__main__':
                 break
             elif key == ord('p'):
                 # save rgb and depths
-                cv2.imwrite("data/color_{}.png".format(name), color_image)
-                cv2.imwrite("data/depth_{}.png".format(name), depths_image)
-                cv2.imwrite("data/tracker.png", images)
+                cv2.imwrite("static_data/color_{}.png".format(name), color_image)
+                cv2.imwrite("static_data/depth_{}.png".format(name), depths_image)
+                cv2.imwrite("static_data/tracker.png", images)
