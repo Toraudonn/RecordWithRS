@@ -14,14 +14,10 @@ from open3d_chain import Open3D_Chain
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 abs_maskrcnn = os.path.join(dir_path, 'maskrcnn')
-assert os.path.exists(abs_maskrcnn), "path doesn't exist"
-try:
-    from maskrcnn.mask_rcnn_train_chain import MaskRCNNTrainChain
-    from maskrcnn.utils.bn_utils import freeze_bn, bn_to_affine
-    from maskrcnn.mask_rcnn_resnet import MaskRCNNResNet
-    from maskrcnn.utils.vis_bbox import vis_bbox
-except Exception as e:
-    print(e)
+from maskrcnn import MaskRCNNTrainChain
+from maskrcnn import freeze_bn, bn_to_affine
+from maskrcnn import MaskRCNNResNet
+from maskrcnn import vis_bbox
 
 
 test_class_ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, \

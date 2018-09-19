@@ -11,15 +11,10 @@ from chainercv import utils
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 abs_maskrcnn = os.path.join(dir_path, 'maskrcnn')
-assert os.path.exists(abs_maskrcnn), "path doesn't exist"
-try:
-    from maskrcnn.mask_rcnn_train_chain import MaskRCNNTrainChain
-    from maskrcnn.utils.bn_utils import freeze_bn, bn_to_affine
-    from maskrcnn.mask_rcnn_resnet import MaskRCNNResNet
-    from maskrcnn.utils.vis_bbox import vis_bbox
-except Exception as e:
-    print(e)
-
+from maskrcnn import MaskRCNNTrainChain
+from maskrcnn import freeze_bn, bn_to_affine
+from maskrcnn import MaskRCNNResNet
+from maskrcnn import vis_bbox
 
 
 if __name__ == '__main__':

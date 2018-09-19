@@ -11,13 +11,8 @@ from utils import DataManagement
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 abs_op_lib = os.path.join(dir_path, 'openpose')
-assert os.path.exists(abs_op_lib)
-sys.path.insert(0, abs_op_lib)
-try:
-    from entity import params, JointType
-    from pose_detector import PoseDetector, draw_person_pose
-except:
-    print('Check the path for OpenPose Directory')
+from openpose import params, JointType
+from openpose import PoseDetector, draw_person_pose
 
 
 if __name__ == "__main__":
@@ -46,8 +41,6 @@ if __name__ == "__main__":
                                 os.path.join(abs_op_lib, 
                                 "models/coco_posenet.npz"), 
                                 device=args.gpu)
-
-    print(datetimes)
 
     for datetime in datetimes:
         save_path = dm.get_save_directory(datetime)

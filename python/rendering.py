@@ -12,12 +12,7 @@ import time
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 abs_op_lib = os.path.join(dir_path, 'openpose')
-assert os.path.exists(abs_op_lib)
-sys.path.insert(0, abs_op_lib)
-try:
-    from entity import params, JointType
-except:
-    print('Check the path for OpenPose Directory')
+from openpose import params, JointType
 
 
 class Joint:
@@ -177,6 +172,7 @@ class Joints:
         
         return geometries
 
+import time
 
 class CustomVisualizer:
 
@@ -187,21 +183,33 @@ class CustomVisualizer:
         '''
         Function to add geometry (cannot destroy)
         '''
+        
+        h, w = self._get_window_size()
         self.vis = o3.Visualizer()
-        self.vis.create_window()
-        self.vis.get_render_option().load_from_json(
-            "static_data/renderoption.json")
+        self.vis.create_window('pose', width=int(w), height=int(h), left=50, right=50)
         self.vis.add_geometry(self.base)
+
+        self.render_option = self.vis.get_render_option().load_from_json(
+            "static_data/renderoption.json")
+        
         self.trajectory = o3.read_pinhole_camera_trajectory("static_data/pinholeCameraTrajectory.json")
         self.custom_view()
+        self.vis.update_renderer()
         self.vis.run()
+    
+
+    def _get_window_size(self):
+        intrinsics = o3.read_pinhole_camera_intrinsic("static_data/pinholeCameraIntrinsic.json")
+        h = intrinsics.height
+        w = intrinsics.width
+        return h, w
 
 
     def update_geometry(self, pcd):
         
         for p in pcd:
             self.vis.add_geometry(p)
-
+        
         self.vis.update_geometry()
         
         self.vis.reset_view_point(False)
